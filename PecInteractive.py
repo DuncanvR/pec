@@ -39,9 +39,13 @@ class PecInteractive(cmd.Cmd):
    def do_remove(self, line):
       """remove task_id
       Removes the task with the given id.
-      Multiple ids can be separated by comma's."""
-      for i in line.split(','):
-         print "Removing task " + i
-         self.db_cursor.execute('DELETE FROM pec_experiments WHERE id = ?', (int(i),))
+      Multiple ids can be separated by comma's, and ranges can be specified as well."""
+      for r in line.split(','):
+         r = r.split('-')
+         if len(r) == 1:
+            r.append(r[0])
+         for i in range(int(r[0]), int(r[1]) + 1):
+            print "Removing task " + str(i)
+            self.db_cursor.execute('DELETE FROM pec_experiments WHERE id = ?', (i,))
       self.db_connection.commit()
 

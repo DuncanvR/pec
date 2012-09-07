@@ -9,12 +9,14 @@ import sys
 ## Constants
 PEC_VERSION      = '0.1'
 DB_VERSION       = '1'
-MODE_INTERACTIVE = 6000
-MODE_RUNNER      = 6001
+MODE_CLI         = 6000
+MODE_INTERACTIVE = 6001
+MODE_RUNNER      = 6002
 
 ## Defaults
-DEFAULT_DB_FILE = "db.sqlite"
-DEFAULT_MODE    = MODE_INTERACTIVE
+DEFAULT_DB_FILE      = "./db.sqlite"
+DEFAULT_MODE         = MODE_INTERACTIVE
+DEFAULT_THREAD_COUNT = 2
 
 ## Functions
 def connect_db(db_path):
@@ -35,8 +37,9 @@ def create_db(db_connection, db_cursor):
    try:
       db_cursor.execute('CREATE TABLE pec_meta  ( name  VARCHAR(30) PRIMARY KEY  ' \
                                                ', value TEXT                    )' )
-      db_cursor.execute('INSERT INTO  pec_meta SELECT "db_version" AS name, ? AS value' ,
-                        (DB_VERSION)                                                    )
+      db_cursor.execute('INSERT INTO  pec_meta SELECT "db_version" AS name, ? AS value' \
+                                       ' UNION SELECT "thread_count",       ?'          ,
+                        (DB_VERSION, DEFAULT_THREAD_COUNT)                              )
       db_cursor.execute('CREATE TABLE pec_experiments ( id         INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT ' \
                                                      ', cmd        TEXT     NOT NULL                           ' \
                                                      ', date_run   DATETIME                                    ' \
@@ -49,7 +52,7 @@ def create_db(db_connection, db_cursor):
 def main():
    # Retrieve arguments
    try:
-      opts, args = getopt.getopt(sys.argv[1:], "d:hr", ["database=", "help", "runner"])
+      opts, args = getopt.getopt(sys.argv[1:], "c:d:hr", ["cli=", "database=", "help", "runner"])
    except getopt.GetoptError as err:
       print str(err)
       usage()
@@ -61,7 +64,10 @@ def main():
 
    # Process arguments
    for o, a in opts:
-      if o in ("-d", "--database"):
+      if o in ("-c", "--cli"):
+         mode = MODE_CLI
+         cli = a
+      elif o in ("-d", "--database"):
          db_path = a
       elif o in ("-h", "--help"):
          usage()
@@ -69,20 +75,21 @@ def main():
       elif o in ("-r", "--runner"):
          mode = MODE_RUNNER
 
-   db = connect_db(db_path)
-
    # Start the program
-   if   mode == MODE_INTERACTIVE:
-      PecInteractive.PecInteractive(db).cmdloop()
+   if mode == MODE_CLI:
+      PecInteractive.PecInteractive(connect_db(db_path)).onecmd(cli)
+   elif mode == MODE_INTERACTIVE:
+      PecInteractive.PecInteractive(connect_db(db_path)).cmdloop()
    elif mode == MODE_RUNNER:
-      PecRunner.PecRunner(db).run()
+      PecRunner.PecRunner(db_path).start_daemon()
    else:
       raise Exception("Unknown mode " + str(mode))
 
 def usage():
    print "Usage: " + sys.argv[0] + " [options]"
    print "Options:"
-   print "   --database=file   The database file to use, default is " + DEFAULT_DB_FILE + " in the working directory"
+   print "   --cli=cmd         Passes the given command to the interactive command interpreter and exits"
+   print "   --database=file   The database file to use, default is " + DEFAULT_DB_FILE
    print "   --help            Shows this help message"
    print "   --runner          Starts the daemon running the experiments"
    print "Each long option --opt also has a short version -o"
