@@ -2,12 +2,11 @@
 import PecInteractive
 import PecRunner
 import getopt
-import os
 from pysqlite2 import dbapi2 as sqlite3
 import sys
 
 ## Constants
-PEC_VERSION      = '0.1'
+PEC_VERSION      = '0.2'
 DB_VERSION       = '1'
 MODE_CLI         = 6000
 MODE_INTERACTIVE = 6001
@@ -48,7 +47,6 @@ def create_db(db_connection, db_cursor):
    except sqlite3.OperationalError as err:
       raise Exception("Error while creating tables: " + str(err))
 
-
 def main():
    # Retrieve arguments
    try:
@@ -77,15 +75,16 @@ def main():
 
    # Start the program
    if mode == MODE_CLI:
-      PecInteractive.PecInteractive(connect_db(db_path)).onecmd(cli)
+      PecInteractive.PecInteractive(db_path).onecmd(cli)
    elif mode == MODE_INTERACTIVE:
-      PecInteractive.PecInteractive(connect_db(db_path)).cmdloop()
+      PecInteractive.PecInteractive(db_path).cmdloop()
    elif mode == MODE_RUNNER:
-      PecRunner.PecRunner(db_path).start_daemon()
+      PecRunner.PecRunner(db_path, sys.argv[0]).start_daemon()
    else:
       raise Exception("Unknown mode " + str(mode))
 
 def usage():
+   print "Project Experiment Controller v" + PEC_VERSION
    print "Usage: " + sys.argv[0] + " [options]"
    print "Options:"
    print "   --cli=cmd         Passes the given command to the interactive command interpreter and exits"
