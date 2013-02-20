@@ -85,3 +85,16 @@ class PecInteractive(cmd.Cmd):
             print "Removing task " + str(i)
             self.db_cursor.execute('DELETE FROM pec_experiments WHERE id = ?', (i,))
       self.db_connection.commit()
+
+   def do_reset(self, line):
+      """reset task_id
+      Reset the task(s) with the given id(s), clearing its running information.
+      Multiple ids can be separated by comma's, and ranges can be specified with a dash."""
+      for r in line.split(','):
+         r = r.split('-')
+         if len(r) == 1:
+            r.append(r[0])
+         for i in range(int(r[0]), int(r[1]) + 1):
+            print "Resetting task " + str(i)
+            self.db_cursor.execute('UPDATE pec_experiments SET date_run = NULL, raw_output = NULL WHERE id = ?', (i,))
+      self.db_connection.commit()
