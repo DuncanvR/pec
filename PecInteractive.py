@@ -65,7 +65,7 @@ class PecInteractive(cmd.Cmd):
             if task == None:
                print "Unable to find task " + str(i)
             else:
-               print "Executing task " + str(i) + ", running command: " + task[0]
+               print "Executing task " + str(i) + ": " + task[0]
                # Close the database connection
                self.db_cursor.close()
                self.db_connection.close()
