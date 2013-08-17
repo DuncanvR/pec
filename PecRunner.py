@@ -59,4 +59,4 @@ class PecRunnerThread(threading.Thread):
          if task == None:
             break
          # Execute the task
-         subprocess.call([self.executable, "-c", "execute " + str(task[0])])
+         subprocess.call([self.executable, "-d", self.db_path, "-c", "execute " + str(task[0])])
