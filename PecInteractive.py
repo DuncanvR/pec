@@ -84,10 +84,17 @@ class PecInteractive(cmd.Cmd):
    def do_list(self, line):
       """list
       Lists the commands in the database"""
-      print "\tCmd\t|\tDate run\t\t\t|\tOutput"
-      self.db_cursor.execute('SELECT id, cmd, date_run, raw_output FROM pec_experiments')
-      for (i, c, dr, ro) in self.db_cursor.fetchall():
-         print str(i) + ":\t" + c + "\t|\t" + (dr or "never\t\t\t") + "\t|\t" + (ro or "")
+      self.list_commands(None)
+
+   def do_listdone(self, line):
+      """listdone
+      Lists the commands in the database that have been completed"""
+      self.list_commands('date_run IS NOT NULL')
+
+   def do_listtodo(self, line):
+      """listtodo
+      Lists the commands in the database that yet have to be run"""
+      self.list_commands('date_run IS NULL')
 
    def do_remove(self, line):
       """remove task_id
@@ -114,3 +121,9 @@ class PecInteractive(cmd.Cmd):
             print "Resetting task " + str(i)
             self.db_cursor.execute('UPDATE pec_experiments SET date_run = NULL, raw_output = NULL WHERE id = ?', (i,))
       self.db_connection.commit()
+
+   def list_commands(self, cond):
+      print "\tCmd\t|\tDate run\t\t\t|\tOutput"
+      self.db_cursor.execute('SELECT id, cmd, date_run, raw_output FROM pec_experiments' + (' WHERE ' + cond if cond else ''))
+      for (i, c, dr, ro) in self.db_cursor.fetchall():
+         print str(i) + ":\t" + c + "\t|\t" + (dr or "never\t\t\t") + "\t|\t" + (ro or "")

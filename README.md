@@ -33,7 +33,9 @@ All these commands can be executed from within the interactive shell, or run fro
 <tr><td><code>add task</code></td>  <td>Adds the given task to the database;</td></tr>
 <tr><td><code>execute id</code></td><td>Executes the task(s) with the given id(s);</td></tr>
 <tr><td><code>help [cmd]</code></td><td>List the available commands or give detailed help about the given command;</td></tr>
-<tr><td><code>list</code></td>      <td>Lists the tasks in the database;</td></tr>
+<tr><td><code>list</code></td>      <td>Lists all tasks in the database;</td></tr>
+<tr><td><code>listdone</code></td>  <td>Lists the tasks in the database that have been completed;</td></tr>
+<tr><td><code>listtodo</code></td>  <td>Lists the tasks in the database that have not been executed;</td></tr>
 <tr><td><code>remove id</code></td> <td>Removes the task(s) with the given id(s) from the database;</td></tr>
 <tr><td><code>reset id</code></td>  <td>Resets the task(s) with the given id(s), clearing its running information;</td></tr>
 </table>
